@@ -3,7 +3,7 @@ const info = obj => {
 };
 
 const error = obj => {
-  console.log("\nERROR: ", obj);
+  console.log("\n.....ERROR ===> ", obj);
 };
 
 module.exports = {

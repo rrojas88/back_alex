@@ -1,34 +1,26 @@
 const express = require('express');
+const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
 
+const routesV1 = require('./routesV1/routes');
 const log = require('../utils/general');
-const bd = require('./bd1');
+
+dotenv.config();
 
 const app = express();
 
-app.get('/', (req, res) => {
-  res.status(200).send('Hello Word');
-});
+console.log("\nMONGO ===>", process.env.MONGO);
 
-app.get('/info', (req, res) => {
-  const { id } = req.query;
-  const msg = bd.bd_mensajes.filter(item => item.id === +id);
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+// parse application/json
+app.use(bodyParser.json());
 
-  let respon = `No se encontro msg con id ${id}`;
-  if (msg.length !== 0) {
-    const info = msg[0];
-    respon = `[${info.target}] : ${info.message}`;
-  }
 
-  res.send(respon);
-});
-app.get('/info2', (req, res) => {
-  res.send('Info DOS !!!');
-});
+routesV1(app);
 
-app.get('*', (req, res) => {
-  res.status(404).send('NOT FOUND');
-});
+const PORT = process.env.PORT || 4000;
 
-app.listen(4000, () => {
-  log.info('Running in port 4000');
+app.listen(PORT, () => {
+  log.info(`Running in port ${PORT}`);
 });

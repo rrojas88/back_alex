@@ -17,6 +17,7 @@
     "rules": {
         "quotes": "off",
         "arrow-parens": "off",
-        "no-console": "off"
+        "no-console": "off",
+        "comma-dangle": "off"
     }
 }
