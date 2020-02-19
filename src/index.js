@@ -5,11 +5,12 @@ const dotenv = require('dotenv');
 const routesV1 = require('./routesV1/routes');
 const log = require('../utils/general');
 
+
 dotenv.config();
 
 const app = express();
 
-console.log("\nMONGO ===>", process.env.MONGO);
+
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
