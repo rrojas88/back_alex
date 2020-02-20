@@ -21,6 +21,10 @@
         "comma-dangle": "off",
         "no-underscore-dangle": "off",
         "object-curly-newline": "off",
-        "camelcase": "off"
+        "camelcase": "off",
+        "spaced-comment": "off",
+        "array-bracket-spacing": "off",
+        "space-in-parens": "off",
+        "no-trailing-spaces": "off"
     }
 }

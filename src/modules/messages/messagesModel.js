@@ -21,6 +21,7 @@ const Message = sequelize.define(
       defaultValue: true
     },
     user_id: {
+      //field: 'user_id',
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -44,12 +45,17 @@ const Message = sequelize.define(
     // Nombre de la tabla igual al del modelo
     freezeTableName: true,
     tableName: 'messages',
+    // Permitir "_" en campos/columnas FOREIGN KEY ???
+    underscored: true,
     // Campos fechas
     timestamps: true,
     createdAt: 'createdat',
     updatedAt: 'updatedat'
   }
 );
+
+Message.belongsTo(User);
+User.hasMany(Message);
 
 (async () => {
   await sequelize.sync();
