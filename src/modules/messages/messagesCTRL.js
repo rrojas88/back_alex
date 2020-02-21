@@ -3,6 +3,8 @@ const log = require('../../../utils/general');
 const Message = require('./messagesModel');
 const User = require('../users/usersModel');
 
+const usersCTRL = require('../users/usersCTRL');
+
 const response = {
   error: false,
   messages: [],
@@ -42,25 +44,32 @@ const createMessage = async (req, res) => {
   resetResponse();
   log.info('Creando mensaje');
 
-  const { target, message, user_id } = req.body;
+  const { target, message } = req.body;
 
-  try {
-    const messageX = await Message.create({ target, message, user_id });
+  const userX = await usersCTRL.getUserByName( target );
 
-    if (messageX === null || messageX === undefined) {
-      responseError(505, ['Error guardando el mensaje']);
-    } else {
-      response.info = `Mensaje Almacenado!.`;
-      response.data = messageX;
+  if ( !userX ) {
+    responseError(505, [`No se encontró el usuario ${target} en la base de datos`]);
+  } else {
+    try {
+      const user_id = userX.id;
+      const messageX = await Message.create({ target, message, user_id });
+
+      if (messageX === null || messageX === undefined) {
+        responseError(505, ['Error guardando el mensaje']);
+      } else {
+        response.info = `Mensaje Almacenado!.`;
+        response.data = messageX;
+      }
+    } catch (err) {
+      log.error(err.parent);
+
+      const errorCode = err.parent.code || 0;
+      let msgError = 'Error guardando el mensaje';
+
+      if (errorCode === '23503') msgError = 'No existe el usuario creador';
+      responseError(505, [msgError]);
     }
-  } catch (err) {
-    log.error(err.parent);
-
-    const errorCode = err.parent.code || 0;
-    let msgError = 'Error guardando el mensaje';
-
-    if (errorCode === '23503') msgError = 'No existe el usuario creador';
-    responseError(505, [msgError]);
   }
   res.status(status).json(response);
 };
@@ -126,6 +135,21 @@ const getAllMessage = async (req, res) => {
   res.status(status).json(response);
 };
 
+const getAllMyMessages = async (req, res) => {
+  resetResponse();
+  log.info('Mostrando todos mis mensajes');
+  const user_id = req.sessionData.dataToken.id;
+
+  const messages = await Message.findAll({
+    where: { user_id, new_: true },
+    include: [{ model: User, attributes: ['id', 'name_', 'nick'] }]
+  });
+
+  response.info = 'Mostrando todos mis mensajes';
+  response.data = messages;
+  res.status(status).json(response);
+};
+
 const getOneMessage = async (req, res) => {
   resetResponse();
   log.info('Mostrando un mensaje');
@@ -145,5 +169,6 @@ module.exports = {
   updateMessage,
   deleteMessage,
   getAllMessage,
-  getOneMessage
+  getOneMessage,
+  getAllMyMessages
 };

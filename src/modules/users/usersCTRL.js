@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+const { targets } = require('../../middlewares/static');
 const User = require('./usersModel');
 
 const log = require('../../../utils/general');
@@ -34,7 +35,7 @@ const responseError = (status_, messages) => {
 const login = async (req, res) => {
   resetResponse();
   try {
-    const { nick, pass } = req.body;
+    const { nick, pass, key_device } = req.body;
 
     const userX = await User.findOne({ where: { nick } });
     if (userX === undefined || userX === null) {
@@ -43,21 +44,33 @@ const login = async (req, res) => {
       const isEqual = await bcrypt.compare(pass, userX.pass);
       if (!isEqual) {
         responseError(400, ['Usuario o contraseña incorrecta']);
-      } else {
-        response.info = 'Acceso TOTAL !!!!!';
-        const tk = jwt.sign({ id: userX.id, name_: userX.name_, nick: userX.nick },
-          process.env.JWT,
-          // 60 => 60seg o 1m
-          // 60 * 10 => 10 minutos
-          // 5m, 5h, 5d => Minutos, horas, dias..
-          { expiresIn: '10m' });
-        response.data.tk = tk;
 
-        userX.token = tk;
-        await userX.save();
+      } else if ( key_device === undefined || key_device === null ) {
+        responseError(404, ['No viene Device']);
+      } else {
+        const targetBD = targets[userX.name_];
+
+        if ( !targetBD || targetBD.key_device !== key_device ) {
+          responseError(404, ['No se encontró Device']);
+        } else {
+          response.info = 'Acceso ok';
+          const tk = jwt.sign(
+            { id: userX.id, name_: userX.name_, nick: userX.nick },
+            process.env.JWT,
+            // 60 => 60seg o 1m
+            // 60 * 10 => 10 minutos
+            // 5m, 5h, 5d => Minutos, horas, dias..
+            { expiresIn: '10m' }
+          );
+          response.data.tk = tk;
+
+          userX.token = tk;
+          await userX.save();
+        }
       }
     }
-  } catch (err) { 
+  } catch (err) {
+    log.error(err);
     log.error(err.parent);
     responseError(505, ['Error al ingresar al sistema']);
   }
@@ -186,11 +199,21 @@ const getOneUser = async (req, res) => {
   res.status(status).json(response);
 };
 
+const getUserByName = async ( name_ ) => {
+  const userX = await User.findOne({ where: { name_ } });
+
+  if (userX === undefined || userX === null) {
+    return false;
+  }
+  return userX;
+};
+
 module.exports = {
   login,
   createUser,
   updateUser,
   deleteUser,
   getAllUser,
-  getOneUser
+  getOneUser,
+  getUserByName
 };
