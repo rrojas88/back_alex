@@ -34,7 +34,7 @@ const validateRow = async id => {
   const messageX = await Message.findByPk(id);
 
   if (messageX === undefined || messageX === null) {
-    responseError(505, ['No se encontró el mensaje']);
+    responseError(500, ['No se encontró el mensaje']);
     return false;
   }
   return messageX;
@@ -49,14 +49,14 @@ const createMessage = async (req, res) => {
   const userX = await usersCTRL.getUserByName( target );
 
   if ( !userX ) {
-    responseError(505, [`No se encontró el usuario ${target} en la base de datos`]);
+    responseError(500, [`No se encontró el usuario ${target} en la base de datos`]);
   } else {
     try {
       const user_id = userX.id;
       const messageX = await Message.create({ target, message, user_id });
 
       if (messageX === null || messageX === undefined) {
-        responseError(505, ['Error guardando el mensaje']);
+        responseError(500, ['Error guardando el mensaje']);
       } else {
         response.info = `Mensaje Almacenado!.`;
         response.data = messageX;
@@ -68,7 +68,7 @@ const createMessage = async (req, res) => {
       let msgError = 'Error guardando el mensaje';
 
       if (errorCode === '23503') msgError = 'No existe el usuario creador';
-      responseError(505, [msgError]);
+      responseError(500, [msgError]);
     }
   }
   res.status(status).json(response);
@@ -81,7 +81,7 @@ const updateMessage = async (req, res) => {
   const { id, target, message, new_ } = req.body;
 
   if (id === undefined || id === null) {
-    responseError(505, ['No hay identificador para el mensaje']);
+    responseError(500, ['No hay identificador para el mensaje']);
     res.status(status).json(response);
   } else {
     const messageX = await validateRow(id);
@@ -106,7 +106,7 @@ const deleteMessage = async (req, res) => {
   const { id } = req.body;
 
   if (id === undefined || id === null) {
-    responseError(505, ['No hay identificador para el mensaje']);
+    responseError(500, ['No hay identificador para el mensaje']);
     res.status(status).json(response);
   } else {
     const messageX = await validateRow(id);

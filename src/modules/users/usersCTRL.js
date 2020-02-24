@@ -72,7 +72,7 @@ const login = async (req, res) => {
   } catch (err) {
     log.error(err);
     log.error(err.parent);
-    responseError(505, ['Error al ingresar al sistema']);
+    responseError(500, ['Error al ingresar al sistema']);
   }
   res.status(status).json(response);
 };
@@ -81,7 +81,7 @@ const validateRow = async id => {
   const userX = await User.findByPk(id);
 
   if (userX === undefined || userX === null) {
-    responseError(505, ['No se encontró el usuario']);
+    responseError(500, ['No se encontró el usuario']);
     return false;
   }
   return userX;
@@ -100,7 +100,7 @@ const createUser = async (req, res) => {
     const userX = await User.create({ name_, nick, pass: hash });
 
     if (userX === null || userX === undefined) {
-      responseError(505, ['Error guardando el usuario']);
+      responseError(500, ['Error guardando el usuario']);
     } else {
       const userNew = JSON.stringify(userX, null, 4);
 
@@ -111,8 +111,8 @@ const createUser = async (req, res) => {
     log.error(err.parent);
     const errorCode = err.parent.code || 0;
     let msgError = 'Error generando HASH o Guardando el usuario';
-    if (errorCode === '23505') msgError = 'Nick en uso';
-    responseError(505, [msgError]);
+    if (errorCode === '23500') msgError = 'Nick en uso';
+    responseError(500, [msgError]);
   }
 
   res.status(status).json(response);
@@ -125,7 +125,7 @@ const updateUser = async (req, res) => {
   const { id, name_, nick, pass } = req.body;
 
   if (id === undefined || id === null) {
-    responseError(505, ['No hay identificador para el usuario']);
+    responseError(500, ['No hay identificador para el usuario']);
     res.status(status).json(response);
   } else {
     const userX = await validateRow(id);
@@ -145,8 +145,8 @@ const updateUser = async (req, res) => {
         log.error(err.parent);
         const errorCode = err.parent.code || 0;
         let msgError = 'Error generando HASH o Actualizando el usuario';
-        if (errorCode === '23505') msgError = 'Nick en uso';
-        responseError(505, [msgError]);
+        if (errorCode === '23500') msgError = 'Nick en uso';
+        responseError(500, [msgError]);
       }
     }
     res.status(status).json(response);
@@ -160,7 +160,7 @@ const deleteUser = async (req, res) => {
   const { id } = req.body;
 
   if (id === undefined || id === null) {
-    responseError(505, ['No hay identificador para el usuario']);
+    responseError(500, ['No hay identificador para el usuario']);
     res.status(status).json(response);
   } else {
     const userX = await validateRow(id);
